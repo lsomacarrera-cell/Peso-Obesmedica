@@ -1,4 +1,4 @@
-const CACHE_NAME = "peso-obesmedica-v4";
+const CACHE_NAME = "peso-obesmedica-v6";
 const ASSETS = [
   "./",
   "./peso.html",
@@ -36,4 +36,5 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(resp => resp || fetch(event.request))
   );
 });
+
 
