@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Peso</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16a34a">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    canvas {
+      width: 100% !important;
+      height: 300px !important;
+    }
+  </style>
+</head>
+
+<body class="bg-green-50 min-h-screen p-4">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+
+    <h1 class="text-3xl font-bold text-center text-green-700 mb-4">
+      🥑 Evolución de mi Peso
+      <p id="fraseMotivacion" class="text-center text-lg font-semibold text-green-700 mb-4"></p>
+    </h1>
+
+        <!-- DOS IMÁGENES LADO A LADO: AGUACATE + OBESMÉDICA -->
+<div class="flex items-center justify-center gap-4 mb-6">
+
+</div>
+
+
+    <!-- Formulario -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <input
+        id="fecha"
+        type="date"
+        class="border p-2 rounded w-full"
+      />
+      <input
+        id="peso"
+        type="number"
+        step="0.1"
+        class="border p-2 rounded w-full"
+        placeholder="Peso (kg)"
+      />
+      <button
+        onclick="agregarPeso()"
+        class="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+      >
+        Añadir
+      </button>
+    </div>
+
+    <!-- Tabla -->
+    <table class="w-full mb-6">
+      <thead>
+        <tr class="bg-green-200">
+          <th class="p-2">Fecha</th>
+          <th class="p-2">Variación</th>
+          <th class="p-2">Peso (kg)</th>
+        </tr>
+      </thead>
+      <tbody id="tabla"></tbody>
+    </table>
+
+    <!-- Gráfico -->
+    <h2 class="text-xl font-bold text-green-700 mb-2">📉 Gráfico de evolución</h2>
+    <canvas id="grafico"></canvas>
+
+    <!-- BOTÓN LIMPIAR AL FINAL -->
+    <button
+      onclick="limpiarTodo()"
+      class="bg-red-500 text-white p-2 mt-6 rounded hover:bg-red-600 w-full"
+    >
+      Limpiar todo 🚮
+    </button>
+
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    let datos = JSON.parse(localStorage.getItem("registroPeso")) || [];
+
+    function guardar() {
+      localStorage.setItem("registroPeso", JSON.stringify(datos));
+    }
+
+    function agregarPeso() {
+      const fecha = document.getElementById("fecha").value;
+      const peso = parseFloat(document.getElementById("peso").value);
+
+      if (!fecha || !peso) {
+        alert("Completa los dos campos.");
+        return;
+      }
+
+      datos.push({ fecha, peso });
+      datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+      guardar();
+      actualizarTabla();
+      actualizarGrafico();
+    }
+
+    function limpiarTodo() {
+      if (confirm("¿Seguro que quieres borrar todo?")) {
+        datos = [];
+        guardar();
+        actualizarTabla();
+        actualizarGrafico();
+      }
+    }
+
+    function actualizarTabla() {
+      const tabla = document.getElementById("tabla");
+      tabla.innerHTML = "";
+
+      for (let i = 0; i < datos.length; i++) {
+        let variacion = "-";
+
+        if (i > 0) {
+          const diff = datos[i].peso - datos[i - 1].peso;
+          variacion = diff.toFixed(1) + " kg";
+        }
+
+        const fila = `
+          <tr class="border-b">
+            <td class="p-2">${datos[i].fecha}</td>
+            <td class="p-2">${variacion}</td>
+            <td class="p-2">${datos[i].peso}</td>
+          </tr>
+        `;
+
+        tabla.innerHTML += fila;
+      }
+    }
+
+    let grafico = null;
+
+    function actualizarGrafico() {
+      const ctx = document.getElementById("grafico").getContext("2d");
+
+      if (grafico) grafico.destroy();
+
+      grafico = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: datos.map((e) => e.fecha),
+          datasets: [
+            {
+              label: "Peso (kg)",
+              data: datos.map((e) => e.peso),
+              borderColor: "#16a34a",
+              backgroundColor: "#86efac",
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: false },
+          },
+        },
+      });
+    }
+const frases = [
+  "Un día más sumando, no restando.",
+  "Cada paso cuenta, aunque sea pequeño.",
+  "Tu yo del futuro te va a dar las gracias.",
+  "Sigue así, ya has demostrado que puedes.",
+  "No es magia, es constancia. Y tú la tienes.",
+  "Hoy también merece la pena intentarlo."
+];
+
+function mostrarFrase() {
+  const frase = frases[Math.floor(Math.random() * frases.length)];
+  document.getElementById("fraseMotivacion").textContent = frase;
+}
+
+mostrarFrase();
+
+    actualizarTabla();
+    actualizarGrafico();
+  </script>
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+</body>
+</html>
