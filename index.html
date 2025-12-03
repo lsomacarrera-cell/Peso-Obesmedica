@@ -9,20 +9,35 @@
 <meta name="theme-color" content="#16a34a">
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    canvas {
-      width: 100% !important;
-      height: 300px !important;
-    }
+  canvas {
+    width: 100% !important;
+    height: 300px !important;
+  }
 
-    /* Esto quita la X fantasma de Android/Samsung */
-    td, button {
-      -webkit-tap-highlight-color: transparent !important;
-    }
+  /* Quita highlight táctil */
+  td, button {
+    -webkit-tap-highlight-color: transparent !important;
+  }
 
-    button {
-      touch-action: manipulation;
-    }
+  button {
+    touch-action: manipulation;
+  }
+
+  /* Quita pseudoiconos automáticos */
+  td button {
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  td button::before,
+  td button::after {
+    content: none !important;
+    display: none !important;
+  }
 </style>
+
 
 </head>
 
@@ -248,6 +263,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
