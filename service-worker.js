@@ -1,14 +1,11 @@
-const CACHE_NAME = "peso-obesmedica-v7";
+const CACHE_NAME = "peso-obesmedica-v10";
 const ASSETS = [
   "./",
-  "./peso.html",
+  "./index.html",
   "./manifest.json",
-  "./service-worker.js",
   "./icon-192.png",
   "./icon-512.png",
   "./Obesmedica.png"
-  // Si tienes el aguacate:
-  // "./aguacate.png"
 ];
 
 self.addEventListener("install", event => {
@@ -22,9 +19,7 @@ self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       )
     )
   );
@@ -36,6 +31,8 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(resp => resp || fetch(event.request))
   );
 });
+
+
 
 
 
