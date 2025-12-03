@@ -96,6 +96,7 @@
     <th class="p-2">Borrar</th>
   </tr>
 </thead>
+
       <tbody id="tabla"></tbody>
     </table>
 
@@ -160,20 +161,17 @@
           variacion = diff.toFixed(1) + " kg";
         }
 
-       const fila = `
+const fila = `
   <tr class="border-b">
-   <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
-<td class="p-2">${variacion}</td>
-<td class="p-2">${datos[i].peso}</td>
-<td class="p-2 text-center">
-  <button onclick="borrarPeso(${i})" class="text-red-600 font-bold">✖</button>
-</td>
-
+    <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
+    <td class="p-2">${variacion}</td>
+    <td class="p-2">${datos[i].peso}</td>
     <td class="p-2 text-center">
       <button onclick="borrarPeso(${i})" class="text-red-600 font-bold">✖</button>
     </td>
   </tr>
 `;
+
 
 
         tabla.innerHTML += fila;
@@ -263,6 +261,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
