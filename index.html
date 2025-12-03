@@ -57,8 +57,13 @@
     </div>
 
     <!-- Tabla -->
+   <div class="flex justify-end mb-4 gap-2">
+  <button onclick="ordenarAsc()" class="bg-green-500 text-white px-3 py-1 rounded">⬆️ Antiguas primero</button>
+  <button onclick="ordenarDesc()" class="bg-green-700 text-white px-3 py-1 rounded">⬇️ Recientes primero</button>
+</div>
+
     <table class="w-full mb-6">
-     <thead>
+<thead>
   <tr class="bg-green-200">
     <th class="p-2">Fecha</th>
     <th class="p-2">Variación</th>
@@ -103,8 +108,7 @@
       }
 
       datos.push({ fecha, peso });
-      datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
+  
       guardar();
       actualizarTabla();
       actualizarGrafico();
@@ -133,9 +137,13 @@
 
        const fila = `
   <tr class="border-b">
-    <td class="p-2">${datos[i].fecha}</td>
-    <td class="p-2">${variacion}</td>
-    <td class="p-2">${datos[i].peso}</td>
+   <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
+<td class="p-2">${variacion}</td>
+<td class="p-2">${datos[i].peso}</td>
+<td class="p-2 text-center">
+  <button onclick="borrarPeso(${i})" class="text-red-600 font-bold">✖</button>
+</td>
+
     <td class="p-2 text-center">
       <button onclick="borrarPeso(${i})" class="text-red-600 font-bold">✖</button>
     </td>
@@ -185,6 +193,26 @@ const frases = [
   "Hoy también merece la pena intentarlo."
 ];
 
+function formatearFecha(fechaISO) {
+  const [ano, mes, dia] = fechaISO.split("-");
+  return `${dia}.${mes}.${ano}`;
+}
+
+function ordenarAsc() {
+  datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+  guardar();
+  actualizarTabla();
+  actualizarGrafico();
+}
+
+function ordenarDesc() {
+  datos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  guardar();
+  actualizarTabla();
+  actualizarGrafico();
+}
+
+    
 function mostrarFrase() {
   const frase = frases[Math.floor(Math.random() * frases.length)];
   document.getElementById("fraseMotivacion").textContent = frase;
@@ -210,6 +238,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
