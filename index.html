@@ -8,12 +8,22 @@
   <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#16a34a">
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
+<style>
     canvas {
       width: 100% !important;
       height: 300px !important;
     }
-  </style>
+
+    /* Esto quita la X fantasma de Android/Samsung */
+    td, button {
+      -webkit-tap-highlight-color: transparent !important;
+    }
+
+    button {
+      touch-action: manipulation;
+    }
+</style>
+
 </head>
 
 <body class="bg-green-50 min-h-screen p-4">
@@ -238,6 +248,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
