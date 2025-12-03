@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Evolución de mi Peso</title>
 
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" href="icon-192.png" />
+  <!-- Manifest y estilos -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#16a34a">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     canvas {
@@ -17,7 +18,7 @@
       height: 300px !important;
     }
 
-    /* Evitar dobles X o iconos fantasma */
+    /* Evitar dobles X / iconos raros en móviles */
     td button {
       background: none !important;
       border: none !important;
@@ -33,41 +34,58 @@
 </head>
 
 <body class="bg-green-50 min-h-screen p-4">
-
   <div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
 
-    <h1 class="text-3xl font-bold text-center text-green-700 mb-4">
+    <!-- Título + frase -->
+    <h1 class="text-3xl font-bold text-center text-green-700 mb-2">
       🥑 Evolución de mi Peso 🥝
     </h1>
-    <p class="text-center text-green-700 mb-6 font-semibold">
-      Sigue así, ya has demostrado que puedes.
-    </p>
+    <p id="fraseMotivacion" class="text-center text-lg font-semibold text-green-700 mb-6"></p>
 
-    <!-- LOGO -->
+    <!-- Logo Obesmedica -->
     <div class="flex justify-center mb-6">
       <img src="Obesmedica.png" alt="Obesmedica" class="h-20 w-auto" />
     </div>
 
-    <!-- FORMULARIO -->
+    <!-- Formulario -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <input type="date" id="fecha" class="p-2 border rounded" />
-      <input type="number" step="0.1" id="peso" placeholder="Peso (kg)" class="p-2 border rounded" />
-      <button onclick="agregarPeso()" class="bg-green-700 text-white p-2 rounded">
+      <input
+        id="fecha"
+        type="date"
+        class="border p-2 rounded w-full"
+      />
+      <input
+        id="peso"
+        type="number"
+        step="0.1"
+        class="border p-2 rounded w-full"
+        placeholder="Peso (kg)"
+      />
+      <button
+        onclick="agregarPeso()"
+        class="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+      >
         Añadir
       </button>
     </div>
 
-    <!-- BOTONES ORDENAR -->
+    <!-- Botones de orden -->
     <div class="flex gap-4 justify-center mb-4">
-      <button onclick="ordenarAsc()" class="bg-green-500 text-white px-4 py-2 rounded">
+      <button
+        onclick="ordenarAsc()"
+        class="bg-green-500 text-white px-4 py-2 rounded"
+      >
         ⬆️ Antiguas primero
       </button>
-      <button onclick="ordenarDesc()" class="bg-green-700 text-white px-4 py-2 rounded">
+      <button
+        onclick="ordenarDesc()"
+        class="bg-green-700 text-white px-4 py-2 rounded"
+      >
         ⬇️ Recientes primero
       </button>
     </div>
 
-    <!-- TABLA -->
+    <!-- Tabla -->
     <table class="w-full mb-2">
       <thead>
         <tr class="bg-green-200">
@@ -80,84 +98,144 @@
       <tbody id="tabla"></tbody>
     </table>
 
-    <!-- TOTAL PERDIDO -->
+    <!-- Total perdido -->
     <p id="totalPerdido" class="text-right text-green-700 font-bold mb-6"></p>
 
-    <!-- GRÁFICO -->
+    <!-- Gráfico -->
     <h2 class="text-xl font-bold text-green-700 mb-2">📉 Gráfico de evolución</h2>
     <canvas id="grafico"></canvas>
+
+    <!-- Botón limpiar todo -->
+    <button
+      onclick="limpiarTodo()"
+      class="bg-red-500 text-white p-2 mt-6 rounded hover:bg-red-600 w-full"
+    >
+      Limpiar todo 🚮
+    </button>
+
   </div>
 
   <script>
-    let datos = JSON.parse(localStorage.getItem("pesos") || "[]");
+    // --------- DATOS Y UTILIDADES BÁSICAS ---------
+    let datos = JSON.parse(localStorage.getItem("registroPeso")) || [];
     let grafico = null;
+    let ordenActual = "asc"; // 'asc' o 'desc'
 
     function guardar() {
-      localStorage.setItem("pesos", JSON.stringify(datos));
+      localStorage.setItem("registroPeso", JSON.stringify(datos));
     }
 
     function formatearFecha(fechaISO) {
+      if (!fechaISO) return "";
       const [a, m, d] = fechaISO.split("-");
-      return `${d}.${m}.${a}`;
+      return `${d}.${m}.${a}`; // DD.MM.AAAA
     }
 
+    // --------- FRASE MOTIVADORA ---------
+    const frases = [
+      "Un día más sumando, no restando.",
+      "Cada paso cuenta, aunque sea pequeño.",
+      "Tu yo del futuro te va a dar las gracias.",
+      "Sigue así, ya has demostrado que puedes.",
+      "No es magia, es constancia. Y tú la tienes.",
+      "Hoy también merece la pena intentarlo."
+    ];
+
+    function mostrarFrase() {
+      const frase = frases[Math.floor(Math.random() * frases.length)];
+      const el = document.getElementById("fraseMotivacion");
+      if (el) el.textContent = frase;
+    }
+
+    // --------- OPERACIONES PRINCIPALES ---------
     function agregarPeso() {
       const fecha = document.getElementById("fecha").value;
       const peso = parseFloat(document.getElementById("peso").value);
 
-      if (!fecha || isNaN(peso)) return alert("Faltan datos");
-
-      datos.push({ fecha, peso });
-      guardar();
-      actualizarTabla();
-      actualizarGrafico();
-    }
-
-    function borrarPeso(i) {
-      if (!confirm("¿Borrar este registro?")) return;
-      datos.splice(i, 1);
-      guardar();
-      actualizarTabla();
-      actualizarGrafico();
-    }
-
-    function calcularTotalPerdido() {
-      if (datos.length < 2) {
-        document.getElementById("totalPerdido").textContent = "";
+      if (!fecha || isNaN(peso)) {
+        alert("Completa los dos campos.");
         return;
       }
-      let total = 0;
-      for (let i = 1; i < datos.length; i++) {
-        total += datos[i].peso - datos[i - 1].peso;
-      }
-      total = total.toFixed(1);
-      const texto =
-        total < 0
-          ? `Total perdido: ${Math.abs(total)} kg`
-          : total > 0
-          ? `Has ganado ${total} kg`
-          : `Sin cambios`;
-      document.getElementById("totalPerdido").textContent = texto;
+
+      datos.push({ fecha, peso });
+      // mantenemos siempre los datos ordenados cronológicamente
+      datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+      guardar();
+      actualizarTabla();
+      actualizarGrafico();
     }
 
+    function borrarPeso(index) {
+      if (!confirm("¿Borrar este registro?")) return;
+      datos.splice(index, 1);
+      guardar();
+      actualizarTabla();
+      actualizarGrafico();
+    }
+
+    function limpiarTodo() {
+      if (!confirm("¿Seguro que quieres borrar todo?")) return;
+      datos = [];
+      guardar();
+      actualizarTabla();
+      actualizarGrafico();
+    }
+
+    // --------- TOTAL PERDIDO ---------
+    function calcularTotalPerdido() {
+      const textoEl = document.getElementById("totalPerdido");
+      if (!textoEl) return;
+
+      if (datos.length < 2) {
+        textoEl.textContent = "";
+        return;
+      }
+
+      const primero = datos[0].peso;
+      const ultimo = datos[datos.length - 1].peso;
+      const diff = +(ultimo - primero).toFixed(1);
+
+      let texto;
+      if (diff < 0) {
+        texto = `Total perdido: ${Math.abs(diff)} kg`;
+      } else if (diff > 0) {
+        texto = `Has ganado ${diff} kg`;
+      } else {
+        texto = "Sin cambios";
+      }
+
+      textoEl.textContent = texto;
+    }
+
+    // --------- TABLA ---------
     function actualizarTabla() {
       const tabla = document.getElementById("tabla");
+      if (!tabla) return;
       tabla.innerHTML = "";
 
-      datos.forEach((entry, i) => {
-        let variacion = "-";
-        if (i > 0) {
-          const diff = entry.peso - datos[i - 1].peso;
-          variacion = diff.toFixed(1) + " kg";
-        }
+      // variaciones calculadas SIEMPRE en orden cronológico real
+      const variaciones = datos.map((item, i) => {
+        if (i === 0) return "-";
+        const diff = item.peso - datos[i - 1].peso;
+        return diff.toFixed(1) + " kg";
+      });
+
+      // índices según orden visual
+      const indices = datos.map((_, i) => i);
+      if (ordenActual === "desc") indices.reverse();
+
+      indices.forEach((idx) => {
+        const entry = datos[idx];
+        const variacion = variaciones[idx];
 
         tabla.innerHTML += `
-          <tr>
+          <tr class="border-b">
             <td class="p-2">${formatearFecha(entry.fecha)}</td>
             <td class="p-2">${variacion}</td>
             <td class="p-2">${entry.peso}</td>
             <td class="p-2 text-center">
-              <button onclick="borrarPeso(${i})" class="text-purple-600 font-bold text-xl">✖</button>
+              <button onclick="borrarPeso(${idx})" class="text-purple-600 font-bold text-xl">✖</button>
             </td>
           </tr>
         `;
@@ -166,46 +244,67 @@
       calcularTotalPerdido();
     }
 
+    // --------- GRÁFICO ---------
     function actualizarGrafico() {
-      const ctx = document.getElementById("grafico").getContext("2d");
+      const canvas = document.getElementById("grafico");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
 
       if (grafico) grafico.destroy();
 
-      const ordenados = [...datos].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+      // El gráfico SIEMPRE cronológico
+      const ordenados = [...datos].sort(
+        (a, b) => new Date(a.fecha) - new Date(b.fecha)
+      );
 
       grafico = new Chart(ctx, {
         type: "line",
         data: {
-          labels: ordenados.map(e => formatearFecha(e.fecha)),
-          datasets: [{
-            label: "Peso (kg)",
-            data: ordenados.map(e => e.peso),
-            borderColor: "#16a34a",
-            backgroundColor: "#86efac",
-            tension: 0.3
-          }]
+          labels: ordenados.map((e) => formatearFecha(e.fecha)),
+          datasets: [
+            {
+              label: "Peso (kg)",
+              data: ordenados.map((e) => e.peso),
+              borderColor: "#16a34a",
+              backgroundColor: "#86efac",
+              tension: 0.3,
+            },
+          ],
         },
-        options: { responsive: true }
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: false },
+          },
+        },
       });
     }
 
+    // --------- ORDEN VISUAL ---------
     function ordenarAsc() {
-      datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-      guardar();
+      ordenActual = "asc";
       actualizarTabla();
     }
 
     function ordenarDesc() {
-      datos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-      guardar();
+      ordenActual = "desc";
       actualizarTabla();
     }
 
+    // --------- INICIO ---------
+    mostrarFrase();
     actualizarTabla();
     actualizarGrafico();
+
+    // Service worker (si lo tienes en el repo)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js").catch(() => {});
+    }
   </script>
 </body>
 </html>
+
+
 
 
 
