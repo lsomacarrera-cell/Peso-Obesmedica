@@ -161,35 +161,43 @@ function borrarFila(index) {
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
     
-    function actualizarTabla() {
-      const tabla = document.getElementById("tabla");
-      tabla.innerHTML = "";
+function actualizarTabla() {
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
 
-      for (let i = 0; i < datos.length; i++) {
-        let variacion = "-";
+  // 1. Copia ordenada por fecha ASC (antiguas primero) para calcular variaciones
+  const ordenado = [...datos].sort(
+    (a, b) => new Date(a.fecha) - new Date(b.fecha)
+  );
 
-        if (i > 0) {
-          const diff = datos[i].peso - datos[i - 1].peso;
-          variacion = diff.toFixed(1) + " kg";
-        }
+  // 2. Recorremos los datos en el orden ACTUAL (según el botón que hayas pulsado)
+  for (let i = 0; i < datos.length; i++) {
+    const actual = datos[i];
 
-const fila = `
-  <tr class="border-b">
-   <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
-    <td class="p-2">${variacion}</td>
-    <td class="p-2">${datos[i].peso}</td>
-    <td class="p-2 text-red-500 font-bold cursor-pointer" onclick="borrarFila(${i})">X</td>
-  </tr>
-`;
+    // Buscamos la posición de este registro en la lista ordenada por fecha
+    const pos = ordenado.findIndex(
+      (e) => e.fecha === actual.fecha && e.peso === actual.peso
+    );
 
-
-
-
-        tabla.innerHTML += fila;
-      }
+    // Calculamos variación respecto al día anterior EN EL TIEMPO
+    let variacion = "-";
+    if (pos > 0) {
+      const diff = actual.peso - ordenado[pos - 1].peso;
+      variacion = diff.toFixed(1) + " kg";
     }
 
-    let grafico = null;
+    const fila = `
+      <tr class="border-b">
+        <td class="p-2">${formatearFecha(actual.fecha)}</td>
+        <td class="p-2">${variacion}</td>
+        <td class="p-2">${actual.peso}</td>
+        <td class="p-2 text-red-500 font-bold cursor-pointer" onclick="borrarFila(${i})">X</td>
+      </tr>
+    `;
+
+    tabla.innerHTML += fila;
+  }
+}
 
     function actualizarGrafico() {
       const ctx = document.getElementById("grafico").getContext("2d");
@@ -272,6 +280,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
