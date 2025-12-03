@@ -149,6 +149,14 @@
       }
     }
 
+function borrarFila(index) {
+  datos.splice(index, 1);
+  guardar();
+  actualizarTabla();
+  actualizarGrafico();
+}
+
+    
     function actualizarTabla() {
       const tabla = document.getElementById("tabla");
       tabla.innerHTML = "";
@@ -163,14 +171,13 @@
 
 const fila = `
   <tr class="border-b">
-    <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
+    <td class="p-2">${datos[i].fecha}</td>
     <td class="p-2">${variacion}</td>
     <td class="p-2">${datos[i].peso}</td>
-    <td class="p-2 text-center">
-      <button onclick="borrarPeso(${i})" class="text-red-600 font-bold">✖</button>
-    </td>
+    <td class="p-2 text-red-500 font-bold cursor-pointer" onclick="borrarFila(${i})">X</td>
   </tr>
 `;
+
 
 
 
@@ -261,6 +268,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
