@@ -156,6 +156,10 @@ function borrarFila(index) {
   actualizarGrafico();
 }
 
+    function formatearFecha(fechaISO) {
+  const partes = fechaISO.split("-");
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
     
     function actualizarTabla() {
       const tabla = document.getElementById("tabla");
@@ -171,7 +175,7 @@ function borrarFila(index) {
 
 const fila = `
   <tr class="border-b">
-    <td class="p-2">${datos[i].fecha}</td>
+   <td class="p-2">${formatearFecha(datos[i].fecha)}</td>
     <td class="p-2">${variacion}</td>
     <td class="p-2">${datos[i].peso}</td>
     <td class="p-2 text-red-500 font-bold cursor-pointer" onclick="borrarFila(${i})">X</td>
@@ -268,6 +272,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
