@@ -98,11 +98,12 @@
 </thead>
 
       <tbody id="tabla"></tbody>
-    </table>
+   </table>
 
-    <!-- Gráfico -->
-    <h2 class="text-xl font-bold text-green-700 mb-2">📉 Gráfico de evolución</h2>
-    <canvas id="grafico"></canvas>
+<p id="totalPerdido" class="text-right text-green-700 font-bold mb-4"></p>
+
+<!-- Gráfico -->
+<h2 class="text-xl font-bold text-green-700 mb-2">📉 Gráfico de evolución</h2>
 
     <!-- BOTÓN LIMPIAR AL FINAL -->
     <button
@@ -165,67 +166,59 @@ function actualizarTabla() {
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = "";
 
-  // 1. Copia ordenada por fecha ASC (antiguas primero) para calcular variaciones
-  const ordenado = [...datos].sort(
-    (a, b) => new Date(a.fecha) - new Date(b.fecha)
-  );
-
-  // 2. Recorremos los datos en el orden ACTUAL (según el botón que hayas pulsado)
   for (let i = 0; i < datos.length; i++) {
-    const actual = datos[i];
-
-    // Buscamos la posición de este registro en la lista ordenada por fecha
-    const pos = ordenado.findIndex(
-      (e) => e.fecha === actual.fecha && e.peso === actual.peso
-    );
-
-    // Calculamos variación respecto al día anterior EN EL TIEMPO
     let variacion = "-";
-    if (pos > 0) {
-      const diff = actual.peso - ordenado[pos - 1].peso;
+    if (i > 0) {
+      const diff = datos[i].peso - datos[i - 1].peso;
       variacion = diff.toFixed(1) + " kg";
     }
 
     const fila = `
       <tr class="border-b">
-        <td class="p-2">${formatearFecha(actual.fecha)}</td>
+        <td class="p-2">${datos[i].fecha}</td>
         <td class="p-2">${variacion}</td>
-        <td class="p-2">${actual.peso}</td>
-        <td class="p-2 text-red-500 font-bold cursor-pointer" onclick="borrarFila(${i})">X</td>
+        <td class="p-2">${datos[i].peso}</td>
       </tr>
     `;
-
     tabla.innerHTML += fila;
   }
+
+  calcularTotalPerdido();  // ← NUEVO
 }
 
-    function actualizarGrafico() {
-      const ctx = document.getElementById("grafico").getContext("2d");
+  function actualizarGrafico() {
+  const ctx = document.getElementById("grafico").getContext("2d");
 
-      if (grafico) grafico.destroy();
+  if (grafico) grafico.destroy();
 
-      grafico = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: datos.map((e) => e.fecha),
-          datasets: [
-            {
-              label: "Peso (kg)",
-              data: datos.map((e) => e.peso),
-              borderColor: "#16a34a",
-              backgroundColor: "#86efac",
-              tension: 0.3,
-            },
-          ],
+  // Crear una copia ordenada SIEMPRE por fecha ascendente
+  const datosOrdenados = [...datos].sort(
+    (a, b) => new Date(a.fecha) - new Date(b.fecha)
+  );
+
+  grafico = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: datosOrdenados.map((e) => e.fecha),
+      datasets: [
+        {
+          label: "Peso (kg)",
+          data: datosOrdenados.map((e) => e.peso),
+          borderColor: "#16a34a",
+          backgroundColor: "#86efac",
+          tension: 0.3,
         },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: false },
-          },
-        },
-      });
-    }
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: false },
+      },
+    },
+  });
+}
+
 const frases = [
   "Paso a paso, pero sin pausa.",
   "Cada paso cuenta, aunque sea pequeño.",
@@ -254,6 +247,28 @@ function ordenarDesc() {
   actualizarGrafico();
 }
 
+    function calcularTotalPerdido() {
+  if (datos.length < 2) {
+    document.getElementById("totalPerdido").textContent = "";
+    return;
+  }
+
+  let total = 0;
+
+  for (let i = 1; i < datos.length; i++) {
+    total += datos[i].peso - datos[i - 1].peso;
+  }
+
+  const perdido = total.toFixed(1);
+
+  document.getElementById("totalPerdido").textContent =
+    perdido < 0
+      ? `Total perdido: ${Math.abs(perdido)} kg`
+      : perdido > 0
+      ? `Has ganado ${perdido} kg`
+      : `Sin cambios`;
+}
+
     
 function mostrarFrase() {
   const frase = frases[Math.floor(Math.random() * frases.length)];
@@ -280,6 +295,7 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
 
 
 
