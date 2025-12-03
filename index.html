@@ -183,30 +183,35 @@
     }
 
     // --------- TOTAL PERDIDO ---------
-    function calcularTotalPerdido() {
-      const textoEl = document.getElementById("totalPerdido");
-      if (!textoEl) return;
+   function calcularTotalPerdido() {
+  const textoEl = document.getElementById("totalPerdido");
+  if (!textoEl || datos.length < 2) {
+    textoEl.textContent = "";
+    return;
+  }
 
-      if (datos.length < 2) {
-        textoEl.textContent = "";
-        return;
-      }
+  // SIEMPRE orden cronológico real (como el gráfico)
+  const ordenados = [...datos].sort(
+    (a, b) => new Date(a.fecha) - new Date(b.fecha)
+  );
 
-      const primero = datos[0].peso;
-      const ultimo = datos[datos.length - 1].peso;
-      const diff = +(ultimo - primero).toFixed(1);
+  const primero = ordenados[0].peso;
+  const ultimo = ordenados[ordenados.length - 1].peso;
 
-      let texto;
-      if (diff < 0) {
-        texto = `Total perdido: ${Math.abs(diff)} kg`;
-      } else if (diff > 0) {
-        texto = `Has ganado ${diff} kg`;
-      } else {
-        texto = "Sin cambios";
-      }
+  const diff = +(ultimo - primero).toFixed(1);
 
-      textoEl.textContent = texto;
-    }
+  let texto;
+  if (diff < 0) {
+    texto = `Total perdido: ${Math.abs(diff)} kg`;
+  } else if (diff > 0) {
+    texto = `Has ganado ${diff} kg`;
+  } else {
+    texto = "Sin cambios";
+  }
+
+  textoEl.textContent = texto;
+}
+
 
     // --------- TABLA ---------
     function actualizarTabla() {
@@ -303,6 +308,7 @@
   </script>
 </body>
 </html>
+
 
 
 
